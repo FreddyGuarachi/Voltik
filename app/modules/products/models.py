@@ -1,9 +1,13 @@
 import uuid
+from typing import TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import UUID, Integer, Float, String, Boolean, func, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.modules.brands.models import Brand
 
 
 class Product(Base):
@@ -29,24 +33,3 @@ class Product(Base):
         UUID(as_uuid=True), ForeignKey("brands.id")
     )
     brand: Mapped["Brand"] = relationship(back_populates="products")
-
-
-class Brand(Base):
-    __tablename__ = "brands"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    name: Mapped[str] = mapped_column(String(50), unique=True)
-    origen: Mapped[str] = mapped_column(String(50))
-    provider: Mapped[str] = mapped_column(String(50))
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
-    )
-
-    products: Mapped[list["Product"]] = relationship(back_populates="brand")

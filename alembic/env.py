@@ -7,7 +7,8 @@ from alembic import context
 
 from app.core.config import setting
 from app.db.base import Base
-from app.products.models import Product, Brand
+from app.modules.brands.models import Brand
+from app.modules.products.models import Product
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
