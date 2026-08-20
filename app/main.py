@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 
-from app.core.dependencies import DBSession
-
-app = FastAPI()
+from app.modules.brands.router import router
 
 
-@app.get("/")
-async def root(db: DBSession) -> dict:
-    return {"message": "Coneccion exitosa"}
+def create_app():
+    app = FastAPI()
+
+    app.include_router(router)
+
+    return app
+
+
+app = create_app()

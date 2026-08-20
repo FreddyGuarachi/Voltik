@@ -28,4 +28,4 @@ class Brand(Base):
         DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
 
-    products: Mapped[list["Product"]] = relationship(back_populates="brand")
+    # products: Mapped[list["Product"]] = relationship(back_populates="brand")
