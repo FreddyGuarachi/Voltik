@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, status
 
 from .schemas import BrandCreate, BrandResponse, BrandResponseList
@@ -14,3 +15,8 @@ async def create(brand: BrandCreate, service: BrandServiceDep):
 @router.get("/", response_model=BrandResponseList)
 async def find_all(query: BrandQueryDep, service: BrandServiceDep):
     return await service.find_all(query)
+
+
+@router.get("/{brand_id}", response_model=BrandResponse)
+async def find_by_id(brand_id: uuid.UUID, service: BrandServiceDep):
+    return await service.find_by_id(brand_id)

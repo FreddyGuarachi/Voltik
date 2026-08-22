@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -53,3 +54,8 @@ class BrandRepository:
         items = (await self.session.scalars(stmt)).all()
 
         return {"items": items, "total": total}
+
+    async def find_by_id(self, brand_id: uuid.UUID) -> Brand:
+        brand_db = select(Brand).where(Brand.id == brand_id)
+
+        return await self.session.scalar(brand_db)
