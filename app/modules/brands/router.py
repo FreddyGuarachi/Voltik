@@ -1,11 +1,16 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
-from .schemas import BrandCreate
-from .dependencies import BrandServiceDep
+from .schemas import BrandCreate, BrandResponse, BrandResponseList
+from .dependencies import BrandServiceDep, BrandQueryDep
 
-router = APIRouter(prefix="/brand", tags=["brand"])
+router = APIRouter(prefix="/brand", tags=["Brand"])
 
 
-@router.post("/")
+@router.post("/", response_model=BrandResponse, status_code=status.HTTP_201_CREATED)
 async def create(brand: BrandCreate, service: BrandServiceDep):
     return await service.create(brand)
+
+
+@router.get("/", response_model=BrandResponseList)
+async def find_all(query: BrandQueryDep, service: BrandServiceDep):
+    return await service.find_all(query)
