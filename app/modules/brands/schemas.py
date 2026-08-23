@@ -34,7 +34,7 @@ class BrandQuery(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=30)
     origen: str | None = Field(default=None, min_length=2, max_length=30)
     provider: str | None = Field(default=None, min_length=2, max_length=30)
-    is_active: bool | None = Field(default=None)
+    is_active: bool | None = None
 
     order_by: Literal["name", "origen", "provider", "is_active"] = Field(default="name")
     order_dir: Literal["asc", "desc"] = "asc"

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from .models import Brand
-from .schemas import BrandCreate, BrandQuery
+from .schemas import BrandCreate, BrandQuery, BrandUpdate
 from app.core.pagination import count_items, apply_order, paginate
 
 
@@ -59,3 +59,17 @@ class BrandRepository:
         brand_db = select(Brand).where(Brand.id == brand_id)
 
         return await self.session.scalar(brand_db)
+
+    async def find_by_name(self, brand: str) -> Brand:
+        brand_db = select(Brand).where(Brand.name == brand)
+
+        return await self.session.scalar(brand_db)
+
+    async def update(self, brand: Brand, brand_data: BrandUpdate) -> Brand:
+        for key, value in brand_data.model_dump(exclude_unset=True).items():
+            setattr(brand, key, value)
+
+        return brand
+
+    async def delete(self, brand: Brand) -> None:
+        await self.session.delete(brand)
