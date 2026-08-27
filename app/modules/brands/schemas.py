@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field, ConfigDict
 
 
 class BrandBase(BaseModel):
-    name: str = Field(min_length=2, max_length=30)
-    origen: str = Field(min_length=2, max_length=30)
-    provider: str = Field(min_length=2, max_length=30)
-    is_active: bool = Field(default=True)
+    name: str = Field(min_length=2, max_length=50)
+    origen: str = Field(min_length=2, max_length=50)
+    provider: str = Field(min_length=2, max_length=50)
+    is_active: bool = True
 
 
 class BrandCreate(BrandBase):
@@ -15,10 +15,10 @@ class BrandCreate(BrandBase):
 
 
 class BrandUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=2, max_length=30)
-    origen: str | None = Field(default=None, min_length=2, max_length=30)
-    provider: str | None = Field(default=None, min_length=2, max_length=30)
-    is_active: bool | None = Field(default=None)
+    name: str | None = Field(default=None, min_length=2, max_length=50)
+    origen: str | None = Field(default=None, min_length=2, max_length=50)
+    provider: str | None = Field(default=None, min_length=2, max_length=50)
+    is_active: bool | None = None
 
 
 class BrandResponse(BrandBase):
@@ -31,12 +31,12 @@ class BrandQuery(BaseModel):
     skip: int = Field(default=0, ge=0)
     limit: int = Field(default=10, ge=1, le=50)
 
-    name: str | None = Field(default=None, min_length=2, max_length=30)
-    origen: str | None = Field(default=None, min_length=2, max_length=30)
-    provider: str | None = Field(default=None, min_length=2, max_length=30)
+    name: str | None = Field(default=None, min_length=2)
+    origen: str | None = Field(default=None, min_length=2)
+    provider: str | None = Field(default=None, min_length=2)
     is_active: bool | None = None
 
-    order_by: Literal["name", "origen", "provider", "is_active"] = Field(default="name")
+    order_by: Literal["name", "origen", "provider", "is_active"] = "name"
     order_dir: Literal["asc", "desc"] = "asc"
 
 

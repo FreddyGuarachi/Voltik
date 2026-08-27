@@ -17,8 +17,9 @@ class Product(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     sku: Mapped[str] = mapped_column(String(50), unique=True)
-    capacity_ah: Mapped[int] = mapped_column(Integer)
-    capacity_cca: Mapped[int] = mapped_column(Integer)
+    stock: Mapped[int] = mapped_column(Integer, default=0)
+    capacity_ah: Mapped[float] = mapped_column(Float)
+    capacity_cca: Mapped[float] = mapped_column(Float)
     voltage: Mapped[float] = mapped_column(Float, default=12)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -29,7 +30,7 @@ class Product(Base):
         DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
 
-    id_brand: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("brands.id")
-    )
-    brand: Mapped["Brand"] = relationship(back_populates="products")
+    # brand_id: Mapped[uuid.UUID] = mapped_column(
+    #     UUID(as_uuid=True), ForeignKey("brands.id")
+    # )
+    # brand: Mapped["Brand"] = relationship(back_populates="products")
