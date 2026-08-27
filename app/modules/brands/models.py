@@ -16,9 +16,9 @@ class Brand(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    name: Mapped[str] = mapped_column(String(50), unique=True)
-    origen: Mapped[str] = mapped_column(String(50))
-    provider: Mapped[str] = mapped_column(String(50))
+    name: Mapped[str] = mapped_column(String(30), unique=True)
+    origen: Mapped[str] = mapped_column(String(30))
+    provider: Mapped[str] = mapped_column(String(30))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     created_at: Mapped[datetime] = mapped_column(
