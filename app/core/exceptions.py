@@ -12,14 +12,22 @@ class AppException(Exception):
 class NotFoundException(AppException):
     status_code: int = 404
 
-    def __init__(self, entity: str, field: str, value: Any):
-        message = f"{entity} with {field} '{value}' not found"
+    def __init__(self, entity: str, value: Any):
+        message = f"{entity} with '{value}' not found"
         super().__init__(message)
 
 
 class AlreadyExistsException(AppException):
     status_code: int = 409
 
-    def __init__(self, entity: str, field: str, value: Any):
-        message = f"{entity} with {field} '{value}' already exists"
+    def __init__(self, entity: str, value: Any):
+        message = f"{entity} with '{value}' already exists"
+        super().__init__(message)
+
+
+class InsufficientStockError(AppException):
+    status_code: int = 409
+
+    def __init__(self, entity: str, available: int):
+        message = f"Insufficient stock for '{entity}' (available: {available})"
         super().__init__(message)

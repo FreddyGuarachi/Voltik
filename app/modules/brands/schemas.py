@@ -45,3 +45,9 @@ class BrandResponseList(BaseModel):
     total: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class BrandSummary(BaseModel):
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)

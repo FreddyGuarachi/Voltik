@@ -19,10 +19,10 @@ class BrandRepository:
         self.session = session
 
     async def create(self, brand: BrandCreate) -> Brand:
-        brand_db = Brand(**brand.model_dump())
-        self.session.add(brand_db)
+        brand = Brand(**brand.model_dump())
+        self.session.add(brand)
 
-        return brand_db
+        return brand
 
     async def find_all(self, query: BrandQuery) -> dict:
         stmt = select(Brand)
@@ -55,15 +55,15 @@ class BrandRepository:
 
         return {"items": items, "total": total}
 
-    async def find_by_id(self, brand_id: uuid.UUID) -> Brand:
-        brand_db = select(Brand).where(Brand.id == brand_id)
+    async def find_by_id(self, brand_id: uuid.UUID) -> Brand | None:
+        stmt = select(Brand).where(Brand.id == brand_id)
 
-        return await self.session.scalar(brand_db)
+        return await self.session.scalar(stmt)
 
-    async def find_by_name(self, brand: str) -> Brand:
-        brand_db = select(Brand).where(Brand.name == brand)
+    async def find_by_name(self, brand: str) -> Brand | None:
+        stmt = select(Brand).where(Brand.name == brand)
 
-        return await self.session.scalar(brand_db)
+        return await self.session.scalar(stmt)
 
     async def update(self, brand: Brand, brand_data: BrandUpdate) -> Brand:
         for key, value in brand_data.model_dump(exclude_unset=True).items():
