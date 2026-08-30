@@ -5,6 +5,7 @@ from app.core.dependencies import DBSession
 from .repository import ProductRepository
 from .service import ProductService
 from .schemas import ProductQuery
+from ..brands.dependencies import BrandServiceDep
 
 
 def get_product_repository(session: DBSession) -> ProductRepository:
@@ -12,9 +13,11 @@ def get_product_repository(session: DBSession) -> ProductRepository:
 
 
 def get_product_service(
-    session: DBSession, repo: ProductRepository = Depends(get_product_repository)
+    session: DBSession,
+    brand_service: BrandServiceDep,
+    repo: ProductRepository = Depends(get_product_repository),
 ) -> ProductService:
-    return ProductService(session=session, repo=repo)
+    return ProductService(session=session, brand_service=brand_service, repo=repo)
 
 
 ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]

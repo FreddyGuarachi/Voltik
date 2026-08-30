@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.modules.products.models import Product
+    from ..products.models import Product
 
 
 class Brand(Base):
@@ -28,4 +28,4 @@ class Brand(Base):
         DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
 
-    # products: Mapped[list["Product"]] = relationship(back_populates="brand")
+    products: Mapped[list["Product"]] = relationship(back_populates="brand")

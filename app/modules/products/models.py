@@ -7,7 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.modules.brands.models import Brand
+    from ..brands.models import Brand
+    from ..sales.models import Sale
+    from ..restock.models import Restock
 
 
 class Product(Base):
@@ -30,7 +32,9 @@ class Product(Base):
         DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now()
     )
 
-    # brand_id: Mapped[uuid.UUID] = mapped_column(
-    #     UUID(as_uuid=True), ForeignKey("brands.id")
-    # )
-    # brand: Mapped["Brand"] = relationship(back_populates="products")
+    brand_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brands.id")
+    )
+    brand: Mapped["Brand"] = relationship(back_populates="products")
+    sales: Mapped[list["Sale"]] = relationship(back_populates="product")
+    restocks: Mapped[list["Restock"]] = relationship(back_populates="product")
