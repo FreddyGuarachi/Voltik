@@ -38,7 +38,7 @@ class BrandService:
 
         return BrandResponseList(**result)
 
-    async def find_by_id(self, brand_id: uuid.UUID) -> Brand:
+    async def find_by_id(self, brand_id: uuid.UUID) -> Brand | None:
         return await self.get_brand_or_raise(brand_id)
 
     async def update(self, brand_id: uuid.UUID, brand_data: BrandUpdate) -> Brand:

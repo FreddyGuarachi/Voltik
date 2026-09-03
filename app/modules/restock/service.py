@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .repository import RestockRepository
-from .schemas import RestockCreate
+from .schemas import RestockCreate, DailySummary
 from .models import Restock
 from ..products.service import ProductService
 
@@ -28,3 +28,16 @@ class RestockService:
         await self.session.refresh(restock)
 
         return restock
+
+    async def get_daily_summary(self) -> list[DailySummary]:
+        rows = await self.repo.get_daily_summary()
+
+        return [
+            DailySummary(
+                date=row.date,
+                product_sku=row.product_sku,
+                brand_name=row.brand_name,
+                total_quantity=row.total_quantity,
+            )
+            for row in rows
+        ]
