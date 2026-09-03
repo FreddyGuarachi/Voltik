@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -15,3 +16,10 @@ class SalesResponse(SaleBase):
     id: uuid.UUID
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class DailySummary(BaseModel):
+    date: date
+    product_sku: str
+    brand_name: str
+    total_quantity: int

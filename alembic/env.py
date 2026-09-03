@@ -10,6 +10,7 @@ from app.db.base import Base
 from app.modules.brands.models import Brand
 from app.modules.products.models import Product
 from app.modules.sales.models import Sale
+from app.modules.users.models import User, UserRole
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

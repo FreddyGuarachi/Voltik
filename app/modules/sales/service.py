@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Sale
 from .repository import SaleRepository
-from .schemas import SaleCreate
+from .schemas import SaleCreate, DailySummary
 from ..products.service import ProductService
 
 
@@ -26,3 +26,16 @@ class SaleService:
         await self.session.refresh(sale)
 
         return sale
+
+    async def get_daily_summary(self) -> list[DailySummary]:
+        rows = await self.repo.get_daily_summary()
+
+        return [
+            DailySummary(
+                date=row.date,
+                product_sku=row.product_sku,
+                brand_name=row.brand_name,
+                total_quantity=row.total_quantity,
+            )
+            for row in rows
+        ]

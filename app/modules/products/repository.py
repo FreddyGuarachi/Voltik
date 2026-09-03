@@ -46,7 +46,8 @@ class ProductRepository:
 
         stmt = paginate(stmt=stmt, skip=query.skip, limit=query.limit)
 
-        items = (await self.session.scalars(stmt)).all()
+        result = await self.session.scalars(stmt)
+        items = result.all()
 
         return {"items": items, "total": total}
 

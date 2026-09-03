@@ -52,7 +52,7 @@ class ProductService:
 
         return ProductResponseList(**result)
 
-    async def find_by_id(self, product_id: uuid.UUID) -> Product:
+    async def find_by_id(self, product_id: uuid.UUID) -> Product | None:
         return await self.get_product_or_raise(product_id)
 
     async def update(
@@ -64,7 +64,7 @@ class ProductService:
         await self.session.commit()
         await self.session.refresh(product)
 
-        product.awaitable_attrs.brand
+        await product.awaitable_attrs.brand
         return product
 
     async def delete(self, product_id: uuid.UUID) -> None:
