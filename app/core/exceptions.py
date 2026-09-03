@@ -31,3 +31,11 @@ class InsufficientStockError(AppException):
     def __init__(self, entity: str, available: int):
         message = f"Insufficient stock for '{entity}' (available: {available})"
         super().__init__(message)
+
+
+class InvalidCredentialsError(AppException):
+    status_code = 401
+
+    def __init__(self):
+        message = f"Invalid username or password"
+        super().__init__(message)
