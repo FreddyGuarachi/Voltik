@@ -23,21 +23,13 @@ class ProductService:
         self.repo = repo
         self.brand_service = brand_service
 
-    async def get_product_or_raise(self, product_id: uuid.UUID) -> Product:
-        product = await self.repo.find_by_id(product_id)
-
-        if product is None:
-            raise NotFoundException("Product", product_id)
-
-        return product
-
     async def create(self, product: ProductCreate) -> Product:
-        await self.brand_service.get_brand_or_raise(product.brand_id)
+        await self.brand_service.find_by_id(product.brand_id)
 
-        existing_product = await self.repo.find_by_sku(product.sku)
+        existing_sku = await self.repo.find_by_sku(product.sku)
 
-        if existing_product:
-            raise AlreadyExistsException("Product", existing_product.sku)
+        if existing_sku:
+            raise AlreadyExistsException("Product", product.sku)
 
         product = await self.repo.create(product)
 
@@ -47,18 +39,24 @@ class ProductService:
         await product.awaitable_attrs.brand
         return product
 
-    async def find_all(self, query: ProductQuery) -> ProductResponseList:
-        result = await self.repo.find_all(query)
+    async def find_all(self, query: ProductQuery) -> dict:
+        return await self.repo.find_all(query)
 
-        return ProductResponseList(**result)
+    async def find_by_id(self, product_id: uuid.UUID) -> Product:
+        product = await self.repo.find_by_id(product_id)
 
-    async def find_by_id(self, product_id: uuid.UUID) -> Product | None:
-        return await self.get_product_or_raise(product_id)
+        if product is None:
+            raise NotFoundException("Product", product_id)
+
+        return product
 
     async def update(
         self, product_id: uuid.UUID, product_data: ProductUpdate
     ) -> Product:
-        product = await self.get_product_or_raise(product_id)
+        product = await self.find_by_id(product_id)
+
+        if product_data.brand_id is not None:
+            await self.brand_service.find_by_id(product_data.brand_id)
 
         await self.repo.update(product=product, product_data=product_data)
         await self.session.commit()
@@ -68,13 +66,13 @@ class ProductService:
         return product
 
     async def delete(self, product_id: uuid.UUID) -> None:
-        product = await self.get_product_or_raise(product_id)
+        product = await self.find_by_id(product_id)
 
         await self.repo.delete(product)
         await self.session.commit()
 
     async def reduce_stock(self, product_id: uuid.UUID, quantity: int) -> None:
-        product = await self.get_product_or_raise(product_id)
+        product = await self.find_by_id(product_id)
 
         if product.stock < quantity:
             raise InsufficientStockError("Product", product.stock)
@@ -85,7 +83,7 @@ class ProductService:
         return await self.repo.update(product=product, product_data=product_data)
 
     async def add_stock(self, product_id: uuid.UUID, quantity: int) -> None:
-        product = await self.get_product_or_raise(product_id)
+        product = await self.find_by_id(product_id)
 
         stock = product.stock + quantity
         product_data = ProductUpdate(stock=stock)

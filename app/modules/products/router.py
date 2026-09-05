@@ -1,8 +1,9 @@
 import uuid
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from .dependencies import ProductServiceDep, ProductQueryDep
 from .schemas import ProductResponse, ProductCreate, ProductResponseList, ProductUpdate
+from ..auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/product", tags=["Products"])
 

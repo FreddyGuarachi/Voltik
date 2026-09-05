@@ -1,11 +1,13 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.orm import joinedload
 
 from .models import Product
 from .schemas import ProductCreate, ProductQuery, ProductUpdate
 from app.core.pagination import count_items, apply_order, paginate
+from ..sales.models import Sale
+from ..restock.models import Restock
 
 
 class ProductRepository:
@@ -71,5 +73,16 @@ class ProductRepository:
 
         return product
 
+    async def has_movements(self, product_id: uuid.UUID) -> bool:
+        stmt = select(
+            exists().where(Sale.product_id == product_id)
+            | exists().where(Restock.product_id == product_id)
+        )
+        return await self.session.scalar(stmt)
+
     async def delete(self, product: Product) -> None:
+        if await self.has_movements(product.id):
+            product.is_active = False
+            return
+
         await self.session.delete(product)

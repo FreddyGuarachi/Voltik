@@ -39,3 +39,27 @@ class InvalidCredentialsError(AppException):
     def __init__(self):
         message = f"Invalid username or password"
         super().__init__(message)
+
+
+class TokenExpiredError(AppException):
+    status_code = 401
+
+    def __init__(self):
+        message = "Token expired, log in again"
+        super().__init__(message)
+
+
+class InvalidTokenError(AppException):
+    status_code = 401
+
+    def __init__(self):
+        message = "Invalid token"
+        super().__init__(message)
+
+
+class UserNotActiveError(AppException):
+    status_code = 401
+
+    def __init__(self):
+        message = "User is not active"
+        super().__init__(message)
