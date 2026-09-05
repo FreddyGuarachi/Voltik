@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class BrandBase(BaseModel):
     name: str = Field(min_length=2, max_length=50)
-    origen: str = Field(min_length=2, max_length=50)
+    origin: str = Field(min_length=2, max_length=50)
     provider: str = Field(min_length=2, max_length=50)
     is_active: bool = True
 
@@ -16,7 +16,7 @@ class BrandCreate(BrandBase):
 
 class BrandUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=50)
-    origen: str | None = Field(default=None, min_length=2, max_length=50)
+    origin: str | None = Field(default=None, min_length=2, max_length=50)
     provider: str | None = Field(default=None, min_length=2, max_length=50)
     is_active: bool | None = None
 
@@ -32,7 +32,7 @@ class BrandQuery(BaseModel):
     limit: int = Field(default=10, ge=1, le=50)
 
     name: str | None = Field(default=None, min_length=2)
-    origen: str | None = Field(default=None, min_length=2)
+    origin: str | None = Field(default=None, min_length=2)
     provider: str | None = Field(default=None, min_length=2)
     is_active: bool | None = None
 

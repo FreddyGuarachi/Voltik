@@ -1,5 +1,5 @@
 from app.core.exceptions import InvalidCredentialsError
-from app.core.security import verify_password
+from app.core.security import verify_password, create_access_token
 from ..users.service import UserService
 
 
@@ -17,4 +17,8 @@ class AuthService:
         if not is_password_valid:
             raise InvalidCredentialsError()
 
-        return {"sub": user.user_name}
+        data = {"sub": str(user.id), "role": user.role}
+
+        token = create_access_token(data)
+
+        return {"access_token": token}

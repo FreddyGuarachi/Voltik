@@ -1,16 +1,17 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, exists
 
 from .models import Brand
 from .schemas import BrandCreate, BrandQuery, BrandUpdate
 from app.core.pagination import count_items, apply_order, paginate
+from ..products.models import Product
 
 
 class BrandRepository:
     ORDER_FIELD = {
         "name": Brand.name,
-        "origen": Brand.origen,
+        "origen": Brand.origin,
         "provider": Brand.provider,
         "is_active": Brand.is_active,
     }
@@ -30,8 +31,8 @@ class BrandRepository:
         # Filter.
         if query.name:
             stmt = stmt.where(Brand.name.ilike(f"%{query.name}%"))
-        if query.origen:
-            stmt = stmt.where(Brand.origen.ilike(f"%{query.origen}%"))
+        if query.origin:
+            stmt = stmt.where(Brand.origin.ilike(f"%{query.origin}%"))
         if query.provider:
             stmt = stmt.where(Brand.provider.ilike(f"%{query.provider}%"))
         if query.is_active is not None:
@@ -72,5 +73,13 @@ class BrandRepository:
 
         return brand
 
+    async def has_products(self, brand_id: uuid.UUID) -> bool:
+        stmt = select(exists().where(Product.brand_id == brand_id))
+        return await self.session.scalar(stmt)
+
     async def delete(self, brand: Brand) -> None:
+        if await self.has_products(brand.id):
+            brand.is_active = False
+            return
+
         await self.session.delete(brand)

@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundException, AlreadyExistsException
-from .schemas import BrandCreate, BrandQuery, BrandResponseList, BrandUpdate
+from .schemas import BrandCreate, BrandQuery, BrandUpdate
 from .repository import BrandRepository
 from .models import Brand
 
@@ -12,18 +12,10 @@ class BrandService:
         self.session = session
         self.repo = repo
 
-    async def get_brand_or_raise(self, brand_id: uuid.UUID) -> Brand:
-        brand = await self.repo.find_by_id(brand_id)
-
-        if brand is None:
-            raise NotFoundException("Brand", brand_id)
-
-        return brand
-
     async def create(self, brand: BrandCreate) -> Brand:
-        brand = await self.repo.find_by_name(brand.name)
+        existing_name = await self.repo.find_by_name(brand.name)
 
-        if brand:
+        if existing_name:
             raise AlreadyExistsException("Brand", brand.name)
 
         brand = await self.repo.create(brand)
@@ -33,16 +25,25 @@ class BrandService:
 
         return brand
 
-    async def find_all(self, query: BrandQuery) -> BrandResponseList:
-        result = await self.repo.find_all(query)
+    async def find_all(self, query: BrandQuery) -> dict:
+        return await self.repo.find_all(query)
 
-        return BrandResponseList(**result)
+    async def find_by_id(self, brand_id: uuid.UUID) -> Brand:
+        brand = await self.repo.find_by_id(brand_id)
 
-    async def find_by_id(self, brand_id: uuid.UUID) -> Brand | None:
-        return await self.get_brand_or_raise(brand_id)
+        if brand is None:
+            raise NotFoundException("Brand", brand_id)
+
+        return brand
 
     async def update(self, brand_id: uuid.UUID, brand_data: BrandUpdate) -> Brand:
-        brand = await self.get_brand_or_raise(brand_id)
+        brand = await self.find_by_id(brand_id)
+
+        if brand_data.name is not None:
+            existing_name = await self.repo.find_by_name(brand_data.name)
+
+            if existing_name and existing_name.id != brand_id:
+                raise AlreadyExistsException("Brand", brand.name)
 
         await self.repo.update(brand=brand, brand_data=brand_data)
         await self.session.commit()
@@ -51,7 +52,7 @@ class BrandService:
         return brand
 
     async def delete(self, brand_id: uuid.UUID) -> None:
-        brand = await self.get_brand_or_raise(brand_id)
+        brand = await self.find_by_id(brand_id)
 
         await self.repo.delete(brand)
         await self.session.commit()
