@@ -3,9 +3,11 @@ from fastapi import APIRouter, status, Depends
 
 from .dependencies import ProductServiceDep, ProductQueryDep
 from .schemas import ProductResponse, ProductCreate, ProductResponseList, ProductUpdate
-from ..auth.dependencies import get_current_user
+from ..auth.dependencies import get_current_admin
 
-router = APIRouter(prefix="/product", tags=["Products"])
+router = APIRouter(
+    prefix="/product", tags=["Products"], dependencies=[Depends(get_current_admin)]
+)
 
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)

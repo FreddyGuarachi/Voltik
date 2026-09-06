@@ -1,10 +1,13 @@
 import uuid
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from .schemas import BrandCreate, BrandResponse, BrandResponseList, BrandUpdate
 from .dependencies import BrandServiceDep, BrandQueryDep
+from ..auth.dependencies import get_current_admin
 
-router = APIRouter(prefix="/brand", tags=["Brand"])
+router = APIRouter(
+    prefix="/brand", tags=["Brand"], dependencies=[Depends(get_current_admin)]
+)
 
 
 @router.post("/", response_model=BrandResponse, status_code=status.HTTP_201_CREATED)

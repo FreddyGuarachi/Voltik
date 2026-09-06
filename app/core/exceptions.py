@@ -63,3 +63,11 @@ class UserNotActiveError(AppException):
     def __init__(self):
         message = "User is not active"
         super().__init__(message)
+
+
+class ForbiddenError(AppException):
+    status_code = 403
+
+    def __init__(self):
+        message = "Insufficient permissions"
+        super().__init__(message)
