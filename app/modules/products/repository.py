@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists
+from sqlalchemy import select, exists, update
 from sqlalchemy.orm import joinedload
 
 from .models import Product
@@ -73,6 +73,13 @@ class ProductRepository:
 
         return product
 
+    async def delete(self, product: Product) -> None:
+        if await self.has_movements(product.id):
+            product.is_active = False
+            return
+
+        await self.session.delete(product)
+
     async def has_movements(self, product_id: uuid.UUID) -> bool:
         stmt = select(
             exists().where(Sale.product_id == product_id)
@@ -80,9 +87,9 @@ class ProductRepository:
         )
         return await self.session.scalar(stmt)
 
-    async def delete(self, product: Product) -> None:
-        if await self.has_movements(product.id):
-            product.is_active = False
-            return
+    async def deactivate_by_brand_id(self, brand_id: uuid.UUID) -> None:
+        stmt = (
+            update(Product).where(Product.brand_id == brand_id).values(is_active=False)
+        )
 
-        await self.session.delete(product)
+        await self.session.execute(stmt)

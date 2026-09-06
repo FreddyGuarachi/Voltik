@@ -5,12 +5,19 @@ from app.core.exceptions import NotFoundException, AlreadyExistsException
 from .schemas import BrandCreate, BrandQuery, BrandUpdate
 from .repository import BrandRepository
 from .models import Brand
+from ..products.repository import ProductRepository
 
 
 class BrandService:
-    def __init__(self, session: AsyncSession, repo: BrandRepository):
+    def __init__(
+        self,
+        session: AsyncSession,
+        repo: BrandRepository,
+        product_repo: ProductRepository,
+    ):
         self.session = session
         self.repo = repo
+        self.product_repo = product_repo
 
     async def create(self, brand: BrandCreate) -> Brand:
         existing_name = await self.repo.find_by_name(brand.name)
@@ -54,5 +61,9 @@ class BrandService:
     async def delete(self, brand_id: uuid.UUID) -> None:
         brand = await self.find_by_id(brand_id)
 
-        await self.repo.delete(brand)
+        was_soft_deleted = await self.repo.delete(brand)
+
+        if was_soft_deleted:
+            await self.product_repo.deactivate_by_brand_id(brand_id)
+
         await self.session.commit()

@@ -5,17 +5,23 @@ from app.core.dependencies import DBSession
 from .repository import BrandRepository
 from .service import BrandService
 from .schemas import BrandQuery
+from ..products.repository import ProductRepository
 
 
 def get_brand_repository(session: DBSession) -> BrandRepository:
     return BrandRepository(session)
 
 
+def get_product_repository_local(session: DBSession) -> ProductRepository:
+    return ProductRepository(session)
+
+
 def get_brand_service(
     session: DBSession,
     repo: BrandRepository = Depends(get_brand_repository),
+    product_repo: ProductRepository = Depends(get_product_repository_local),
 ) -> BrandService:
-    return BrandService(session, repo)
+    return BrandService(session, repo, product_repo=product_repo)
 
 
 BrandServiceDep = Annotated[BrandService, Depends(get_brand_service)]

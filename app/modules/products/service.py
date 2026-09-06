@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Product
-from .schemas import ProductCreate, ProductQuery, ProductResponseList, ProductUpdate
+from .schemas import ProductCreate, ProductQuery, ProductUpdate
 from .repository import ProductRepository
 from app.core.exceptions import (
     NotFoundException,
