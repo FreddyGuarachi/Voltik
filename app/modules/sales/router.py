@@ -1,9 +1,12 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from .dependencies import SaleServiceDep
 from .schemas import SalesResponse, SaleCreate, DailySummary
+from ..auth.dependencies import get_current_user
 
-router = APIRouter(prefix="/sale", tags=["Sales"])
+router = APIRouter(
+    prefix="/sale", tags=["Sales"], dependencies=[Depends(get_current_user)]
+)
 
 
 @router.post("/", response_model=SalesResponse, status_code=status.HTTP_201_CREATED)

@@ -7,7 +7,7 @@ from .dependencies import AuthServiceDep
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/", response_model=Token)
+@router.post("/login", response_model=Token)
 async def login(
     service: AuthServiceDep, form_data: OAuth2PasswordRequestForm = Depends()
 ):

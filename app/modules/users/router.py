@@ -1,10 +1,13 @@
 import uuid
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 
 from .schemas import UserResponse, UserCreate, UserResponseList, UserUpdate
 from .dependencies import UserServiceDep, UserQueryDep
+from ..auth.dependencies import get_current_admin
 
-router = APIRouter(prefix="/user", tags=["User"])
+router = APIRouter(
+    prefix="/user", tags=["User"], dependencies=[Depends(get_current_admin)]
+)
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

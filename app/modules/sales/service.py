@@ -18,7 +18,9 @@ class SaleService:
         self.product_service = product_service
 
     async def create(self, sale: SaleCreate) -> Sale:
-        await self.product_service.reduce_stock(sale.product_id, sale.quantity)
+        await self.product_service.reduce_stock(
+            product_id=sale.product_id, quantity=sale.quantity
+        )
 
         sale = await self.repo.create(sale)
 

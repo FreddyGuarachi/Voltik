@@ -73,10 +73,6 @@ class BrandRepository:
 
         return brand
 
-    async def has_products(self, brand_id: uuid.UUID) -> bool:
-        stmt = select(exists().where(Product.brand_id == brand_id))
-        return await self.session.scalar(stmt)
-
     async def delete(self, brand: Brand) -> bool:
         if await self.has_products(brand.id):
             brand.is_active = False
@@ -84,3 +80,7 @@ class BrandRepository:
 
         await self.session.delete(brand)
         return False
+
+    async def has_products(self, brand_id: uuid.UUID) -> bool:
+        stmt = select(exists().where(Product.brand_id == brand_id))
+        return await self.session.scalar(stmt)
