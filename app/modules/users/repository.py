@@ -17,7 +17,7 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, user: UserCreate) -> User:
+    async def create(self, user: User) -> User:
         self.session.add(user)
 
         return user

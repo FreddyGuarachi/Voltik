@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from .service import AuthService
 from ..users.dependencies import UserServiceDep
-from ..users.models import User
+from ..users.models import User, UserRole
 from app.core.security import decode_access_token
 from app.core.exceptions import UserNotActiveError, ForbiddenError
 
@@ -32,8 +32,12 @@ async def get_current_user(
     return user
 
 
-async def get_current_admin(token: str = Depends(oauth2_schema)) -> None:
-    payload = decode_access_token(token)
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
-    if payload.get("role") != "admin":
+
+async def get_current_admin(user: CurrentUserDep) -> User:
+
+    if user.role != UserRole.ADMIN:
         raise ForbiddenError()
+
+    return user

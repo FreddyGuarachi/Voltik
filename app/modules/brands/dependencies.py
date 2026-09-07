@@ -21,7 +21,7 @@ def get_brand_service(
     repo: BrandRepository = Depends(get_brand_repository),
     product_repo: ProductRepository = Depends(get_product_repository_local),
 ) -> BrandService:
-    return BrandService(session, repo, product_repo=product_repo)
+    return BrandService(session=session, product_repo=product_repo, repo=repo)
 
 
 BrandServiceDep = Annotated[BrandService, Depends(get_brand_service)]

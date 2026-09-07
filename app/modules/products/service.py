@@ -58,6 +58,12 @@ class ProductService:
         if product_data.brand_id is not None:
             await self.brand_service.find_by_id(product_data.brand_id)
 
+        if product_data.sku is not None:
+            existing_sku = await self.repo.find_by_sku(product_data.sku)
+
+            if existing_sku and existing_sku.id != product_id:
+                raise AlreadyExistsException("Product", product_data.sku)
+
         await self.repo.update(product=product, product_data=product_data)
         await self.session.commit()
         await self.session.refresh(product)

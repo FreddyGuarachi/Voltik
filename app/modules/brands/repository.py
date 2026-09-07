@@ -11,7 +11,7 @@ from ..products.models import Product
 class BrandRepository:
     ORDER_FIELD = {
         "name": Brand.name,
-        "origen": Brand.origin,
+        "origin": Brand.origin,
         "provider": Brand.provider,
         "is_active": Brand.is_active,
     }
