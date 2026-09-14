@@ -13,12 +13,9 @@ from app.core.exceptions import AlreadyExistsException, NotFoundException
 
 
 @pytest.mark.asyncio
-async def test_create(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_create(
+    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
+):
     await repo.create(brand_in)
     await db_session.commit()
 
@@ -30,14 +27,7 @@ async def test_create(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_create_duplicate(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_create_duplicate(service: BrandService, brand_in: BrandCreate):
     await service.create(brand_in)
 
     with pytest.raises(AlreadyExistsException):
@@ -45,12 +35,9 @@ async def test_create_duplicate(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_find_by_id(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_find_by_id(
+    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
+):
     brand = await repo.create(brand_in)
     await db_session.commit()
 
@@ -61,11 +48,7 @@ async def test_find_by_id(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_find_by_id_not_found(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
+async def test_find_by_id_not_found(service: BrandService):
     brand_id = uuid.uuid4()
 
     with pytest.raises(NotFoundException):
@@ -73,12 +56,9 @@ async def test_find_by_id_not_found(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_update(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_update(
+    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
+):
     brand = await repo.create(brand_in)
     await db_session.commit()
 
@@ -91,14 +71,7 @@ async def test_update(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_update_duplicate(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_update_duplicate(brand_in: BrandCreate, service: BrandService):
     brand = await service.create(brand_in)
 
     brand_another = BrandCreate(
@@ -113,25 +86,13 @@ async def test_update_duplicate(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_soft_delete_repo(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
-    brand = await repo.create(brand_in)
-    await db_session.commit()
-
-    product_in = ProductCreate(
-        sku="SKU1",
-        stock=10,
-        capacity_ah=60,
-        capacity_cca=500,
-        voltage=12,
-        is_active=True,
-        brand_id=brand.id,
-    )
+async def test_delete_soft_repo(
+    db_session: AsyncSession,
+    repo: BrandRepository,
+    product_in: ProductCreate,
+    product_repo: ProductRepository,
+    brand: Brand,
+):
     await product_repo.create(product_in)
     await db_session.commit()
 
@@ -142,12 +103,9 @@ async def test_delete_soft_delete_repo(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_hard_delete_repo(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
+async def test_delete_hard_repo(
+    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
+):
     brand = await repo.create(brand_in)
     await db_session.commit()
 
@@ -155,26 +113,13 @@ async def test_delete_hard_delete_repo(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_soft_delete_service(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
-    brand = await service.create(brand_in)
-    await db_session.commit()
-
-    product_in = ProductCreate(
-        sku="SKU1",
-        stock=10,
-        capacity_ah=60,
-        capacity_cca=500,
-        voltage=12,
-        is_active=True,
-        brand_id=brand.id,
-    )
+async def test_delete_soft_service(
+    db_session: AsyncSession,
+    service: BrandService,
+    product_in: ProductCreate,
+    product_repo: ProductRepository,
+    brand: Brand,
+):
     await product_repo.create(product_in)
     await db_session.commit()
 
@@ -185,11 +130,7 @@ async def test_delete_soft_delete_service(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_not_found_service(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
+async def test_delete_not_found_service(service: BrandService):
     brand_id = uuid.uuid4()
 
     with pytest.raises(NotFoundException):
@@ -197,47 +138,28 @@ async def test_delete_not_found_service(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_soft_delete_cascade_service(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
-    brand = await service.create(brand_in)
-    await db_session.commit()
-
-    product_in = ProductCreate(
-        sku="SKU1",
-        stock=10,
-        capacity_ah=60,
-        capacity_cca=500,
-        voltage=12,
-        is_active=True,
-        brand_id=brand.id,
-    )
+async def test_delete_soft_cascade_service(
+    db_session: AsyncSession,
+    service: BrandService,
+    product_in: ProductCreate,
+    brand: Brand,
+    product_repo: ProductRepository,
+):
     product = await product_repo.create(product_in)
     await db_session.commit()
 
     await service.delete(brand.id)
 
-    assert brand.is_active == False
-    assert product.is_active == False
+    assert brand.is_active is False
+    assert product.is_active is False
 
 
 @pytest.mark.asyncio
-async def test_delete_hard_delete_no_cascade_service(db_session: AsyncSession):
-    repo = BrandRepository(db_session)
-    product_repo = ProductRepository(db_session)
-    service = BrandService(session=db_session, repo=repo, product_repo=product_repo)
-
-    brand_in = BrandCreate(
-        name="Bosch", origin="Alemania", provider="Bosch Argentina", is_active=True
-    )
-    brand = await service.create(brand_in)
-    await db_session.commit()
-
+async def test_delete_hard_no_cascade_service(
+    service: BrandService,
+    brand: Brand,
+    repo: BrandRepository,
+):
     await service.delete(brand.id)
 
     brand_deleted = await repo.find_by_id(brand.id)
