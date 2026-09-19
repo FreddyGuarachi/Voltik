@@ -19,8 +19,8 @@ class BrandRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, brand: BrandCreate) -> Brand:
-        brand = Brand(**brand.model_dump())
+    async def create(self, brand_in: BrandCreate) -> Brand:
+        brand = Brand(**brand_in.model_dump())
         self.session.add(brand)
 
         return brand
@@ -62,8 +62,8 @@ class BrandRepository:
 
         return await self.session.scalar(stmt)
 
-    async def find_by_name(self, brand: str) -> Brand | None:
-        stmt = select(Brand).where(Brand.name == brand)
+    async def find_by_name(self, brand_name: str) -> Brand | None:
+        stmt = select(Brand).where(Brand.name == brand_name)
 
         return await self.session.scalar(stmt)
 

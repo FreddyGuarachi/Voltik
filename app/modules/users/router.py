@@ -11,8 +11,8 @@ router = APIRouter(
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create(user: UserCreate, service: UserServiceDep):
-    return await service.create(user)
+async def create(user_in: UserCreate, service: UserServiceDep):
+    return await service.create(user_in)
 
 
 @router.get("/", response_model=UserResponseList)

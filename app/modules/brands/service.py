@@ -19,13 +19,13 @@ class BrandService:
         self.repo = repo
         self.product_repo = product_repo
 
-    async def create(self, brand: BrandCreate) -> Brand:
-        existing_name = await self.repo.find_by_name(brand.name)
+    async def create(self, brand_in: BrandCreate) -> Brand:
+        existing_name = await self.repo.find_by_name(brand_in.name)
 
         if existing_name:
-            raise AlreadyExistsException("Brand", brand.name)
+            raise AlreadyExistsException("Brand", brand_in.name)
 
-        brand = await self.repo.create(brand)
+        brand = await self.repo.create(brand_in)
 
         await self.session.commit()
         await self.session.refresh(brand)

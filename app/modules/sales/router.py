@@ -10,8 +10,8 @@ router = APIRouter(
 
 
 @router.post("/", response_model=SalesResponse, status_code=status.HTTP_201_CREATED)
-async def create(sale: SaleCreate, service: SaleServiceDep):
-    return await service.create(sale)
+async def create(sale_in: SaleCreate, service: SaleServiceDep):
+    return await service.create(sale_in)
 
 
 @router.get("/summary", response_model=list[DailySummary])

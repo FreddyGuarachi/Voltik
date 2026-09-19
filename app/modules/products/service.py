@@ -23,15 +23,15 @@ class ProductService:
         self.repo = repo
         self.brand_service = brand_service
 
-    async def create(self, product: ProductCreate) -> Product:
-        await self.brand_service.find_by_id(product.brand_id)
+    async def create(self, product_in: ProductCreate) -> Product:
+        await self.brand_service.find_by_id(product_in.brand_id)
 
-        existing_sku = await self.repo.find_by_sku(product.sku)
+        existing_sku = await self.repo.find_by_sku(product_in.sku)
 
         if existing_sku:
-            raise AlreadyExistsException("Product", product.sku)
+            raise AlreadyExistsException("Product", product_in.sku)
 
-        product = await self.repo.create(product)
+        product = await self.repo.create(product_in)
 
         await self.session.commit()
         await self.session.refresh(product)
@@ -86,7 +86,8 @@ class ProductService:
         stock = product.stock - quantity
         product_data = ProductUpdate(stock=stock)
 
-        return await self.repo.update(product=product, product_data=product_data)
+        await self.repo.update(product=product, product_data=product_data)
+        await self.session.commit()
 
     async def add_stock(self, product_id: uuid.UUID, quantity: int) -> None:
         product = await self.find_by_id(product_id)
@@ -94,4 +95,5 @@ class ProductService:
         stock = product.stock + quantity
         product_data = ProductUpdate(stock=stock)
 
-        return await self.repo.update(product=product, product_data=product_data)
+        await self.repo.update(product=product, product_data=product_data)
+        await self.session.commit()

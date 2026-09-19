@@ -11,8 +11,8 @@ class SaleRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, sale: SaleCreate) -> Sale:
-        sale = Sale(**sale.model_dump())
+    async def create(self, sale_in: SaleCreate) -> Sale:
+        sale = Sale(**sale_in.model_dump())
         self.session.add(sale)
 
         return sale

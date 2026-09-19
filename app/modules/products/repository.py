@@ -20,8 +20,8 @@ class ProductRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, product: ProductCreate) -> Product:
-        product = Product(**product.model_dump())
+    async def create(self, product_in: ProductCreate) -> Product:
+        product = Product(**product_in.model_dump())
         self.session.add(product)
 
         return product

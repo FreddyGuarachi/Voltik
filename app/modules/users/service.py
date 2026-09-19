@@ -17,27 +17,19 @@ class UserService:
         self.session = session
         self.repo = repo
 
-    async def get_user_or_raise(self, user_id: uuid.UUID) -> User:
-        user = await self.repo.find_by_id(user_id)
-
-        if user is None:
-            raise NotFoundException("User", user_id)
-
-        return user
-
-    async def create(self, user: UserCreate) -> User:
-        existing_user_name = await self.repo.find_by_user_name(user.user_name)
+    async def create(self, user_in: UserCreate) -> User:
+        existing_user_name = await self.repo.find_by_user_name(user_in.user_name)
 
         if existing_user_name:
-            raise AlreadyExistsException("User", user.user_name)
+            raise AlreadyExistsException("User", user_in.user_name)
 
-        hashed_password = get_password_hash(user.password)
+        hashed_password = get_password_hash(user_in.password)
 
         user = User(
-            user_name=user.user_name,
+            user_name=user_in.user_name,
             password_hash=hashed_password,
-            is_active=user.is_active,
-            role=user.role,
+            is_active=user_in.is_active,
+            role=user_in.role,
         )
 
         user = await self.repo.create(user)
@@ -53,7 +45,12 @@ class UserService:
         return UserResponseList(**result)
 
     async def find_by_id(self, user_id: uuid.UUID) -> User:
-        return await self.get_user_or_raise(user_id)
+        user = await self.repo.find_by_id(user_id)
+
+        if user is None:
+            raise NotFoundException("User", user_id)
+
+        return user
 
     async def find_by_user_name(self, user_name: str) -> User:
         user = await self.repo.find_by_user_name(user_name)
@@ -64,7 +61,7 @@ class UserService:
         return user
 
     async def update(self, user_id: uuid.UUID, user_data: UserUpdate) -> User:
-        user = await self.get_user_or_raise(user_id)
+        user = await self.find_by_id(user_id)
 
         await self.repo.update(user=user, user_data=user_data)
         await self.session.commit()
@@ -73,7 +70,7 @@ class UserService:
         return user
 
     async def delete(self, user_id: uuid.UUID) -> None:
-        user = await self.get_user_or_raise(user_id)
+        user = await self.find_by_id(user_id)
 
         await self.repo.delete(user)
         await self.session.commit()

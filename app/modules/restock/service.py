@@ -17,12 +17,12 @@ class RestockService:
         self.repo = repo
         self.service_product = service_product
 
-    async def create(self, restock: RestockCreate) -> Restock:
+    async def create(self, restock_in: RestockCreate) -> Restock:
         await self.service_product.add_stock(
-            product_id=restock.product_id, quantity=restock.quantity
+            product_id=restock_in.product_id, quantity=restock_in.quantity
         )
 
-        restock = await self.repo.create(restock)
+        restock = await self.repo.create(restock_in)
 
         await self.session.commit()
         await self.session.refresh(restock)

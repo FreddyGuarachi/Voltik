@@ -17,12 +17,12 @@ class SaleService:
         self.repo = repo
         self.product_service = product_service
 
-    async def create(self, sale: SaleCreate) -> Sale:
+    async def create(self, sale_in: SaleCreate) -> Sale:
         await self.product_service.reduce_stock(
-            product_id=sale.product_id, quantity=sale.quantity
+            product_id=sale_in.product_id, quantity=sale_in.quantity
         )
 
-        sale = await self.repo.create(sale)
+        sale = await self.repo.create(sale_in)
 
         await self.session.commit()
         await self.session.refresh(sale)

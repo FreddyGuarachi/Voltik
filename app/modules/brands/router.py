@@ -11,8 +11,8 @@ router = APIRouter(
 
 
 @router.post("/", response_model=BrandResponse, status_code=status.HTTP_201_CREATED)
-async def create(brand: BrandCreate, service: BrandServiceDep):
-    return await service.create(brand)
+async def create(brand_in: BrandCreate, service: BrandServiceDep):
+    return await service.create(brand_in)
 
 
 @router.get("/", response_model=BrandResponseList)
