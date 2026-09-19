@@ -1,12 +1,16 @@
+from datetime import datetime, timezone, timedelta
+
+import jwt
 import pytest
 
+from app.core.config import setting
 from app.core.security import (
     get_password_hash,
     verify_password,
     create_access_token,
     decode_access_token,
 )
-from app.core.exceptions import InvalidTokenError
+from app.core.exceptions import InvalidTokenError, TokenExpiredError
 
 
 def test_get_password_hash():
@@ -41,4 +45,14 @@ def test_create_access_token():
 
 def test_decode_access_token():
     with pytest.raises(InvalidTokenError):
-        decode_access_token("token_invalided")
+        decode_access_token("invalid_token")
+
+
+def test_decode_access_token_expired():
+    expired = datetime.now(timezone.utc) - timedelta(minutes=1)
+    payload = {"sub": "admin1", "exp": expired}
+
+    token = jwt.encode(payload, setting.SECRET_KEY, algorithm=setting.ALGORITHM)
+
+    with pytest.raises(TokenExpiredError):
+        decode_access_token(token)

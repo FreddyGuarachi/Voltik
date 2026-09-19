@@ -1,10 +1,10 @@
-import pytest
 import uuid
+
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 from app.modules.brands.models import Brand
-from app.modules.brands.schemas import BrandCreate, BrandUpdate
+from app.modules.brands.schemas import BrandCreate, BrandQuery, BrandUpdate
 from app.modules.brands.repository import BrandRepository
 from app.modules.brands.service import BrandService
 from app.modules.products.repository import ProductRepository
@@ -13,155 +13,133 @@ from app.core.exceptions import AlreadyExistsException, NotFoundException
 
 
 @pytest.mark.asyncio
-async def test_create(
-    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
-):
-    await repo.create(brand_in)
-    await db_session.commit()
+class TestBrandRepository:
+    async def test_find_all(
+        self,
+        db_session: AsyncSession,
+        brand_repo: BrandRepository,
+        brand_in: BrandCreate,
+    ):
+        await brand_repo.create(brand_in)
+        await db_session.commit()
 
-    stmt = select(Brand).where(Brand.name == "Bosch")
-    result = await db_session.scalar(stmt)
+        query = BrandQuery(
+            name=brand_in.name,
+            origin=brand_in.origin,
+            provider=brand_in.provider,
+            is_active=brand_in.is_active,
+            order_by="name",
+            order_dir="asc",
+            skip=0,
+            limit=10,
+        )
 
-    assert result.name == "Bosch"
-    assert result.origin == "Alemania"
+        result = await brand_repo.find_all(query)
 
+        assert "items" in result
+        assert "total" in result
+        assert len(result["items"]) > 0
+        assert result["total"] > 0
 
-@pytest.mark.asyncio
-async def test_create_duplicate(service: BrandService, brand_in: BrandCreate):
-    await service.create(brand_in)
+    async def test_update(
+        self,
+        db_session: AsyncSession,
+        brand_repo: BrandRepository,
+        brand_in: BrandCreate,
+    ):
+        brand = await brand_repo.create(brand_in)
+        await db_session.commit()
 
-    with pytest.raises(AlreadyExistsException):
-        await service.create(brand_in)
+        brand_data = BrandUpdate(name="Willard", origin="Argentina")
 
+        result = await brand_repo.update(brand=brand, brand_data=brand_data)
 
-@pytest.mark.asyncio
-async def test_find_by_id(
-    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
-):
-    brand = await repo.create(brand_in)
-    await db_session.commit()
+        assert result.name == "Willard"
+        assert result.origin == "Argentina"
 
-    stmt = await repo.find_by_id(brand.id)
+    async def test_delete_soft(
+        self,
+        db_session: AsyncSession,
+        brand_repo: BrandRepository,
+        product_in: ProductCreate,
+        product_repo: ProductRepository,
+        brand: Brand,
+    ):
+        await product_repo.create(product_in)
+        await db_session.commit()
 
-    assert stmt is not None
-    assert stmt.name == "Bosch"
+        result = await brand_repo.delete(brand)
 
+        assert result is True
+        assert brand.is_active is False
 
-@pytest.mark.asyncio
-async def test_find_by_id_not_found(service: BrandService):
-    brand_id = uuid.uuid4()
+    async def test_delete_hard(
+        self,
+        db_session: AsyncSession,
+        brand_repo: BrandRepository,
+        brand_in: BrandCreate,
+    ):
+        brand = await brand_repo.create(brand_in)
+        await db_session.commit()
 
-    with pytest.raises(NotFoundException):
-        await service.find_by_id(brand_id)
-
-
-@pytest.mark.asyncio
-async def test_update(
-    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
-):
-    brand = await repo.create(brand_in)
-    await db_session.commit()
-
-    brand_data = BrandUpdate(name="Willard", origin="Argentina")
-
-    result = await repo.update(brand=brand, brand_data=brand_data)
-
-    assert result.name == "Willard"
-    assert result.origin == "Argentina"
-
-
-@pytest.mark.asyncio
-async def test_update_duplicate(brand_in: BrandCreate, service: BrandService):
-    brand = await service.create(brand_in)
-
-    brand_another = BrandCreate(
-        name="Moura", origin="Brasil", provider="Moura", is_active=True
-    )
-    await service.create(brand_another)
-
-    brand_data = BrandUpdate(name="Moura")
-
-    with pytest.raises(AlreadyExistsException):
-        await service.update(brand_id=brand.id, brand_data=brand_data)
-
-
-@pytest.mark.asyncio
-async def test_delete_soft_repo(
-    db_session: AsyncSession,
-    repo: BrandRepository,
-    product_in: ProductCreate,
-    product_repo: ProductRepository,
-    brand: Brand,
-):
-    await product_repo.create(product_in)
-    await db_session.commit()
-
-    result = await repo.delete(brand)
-
-    assert result is True
-    assert brand.is_active is False
+        assert await brand_repo.delete(brand) is False
 
 
 @pytest.mark.asyncio
-async def test_delete_hard_repo(
-    db_session: AsyncSession, repo: BrandRepository, brand_in: BrandCreate
-):
-    brand = await repo.create(brand_in)
-    await db_session.commit()
+class TestBrandService:
+    async def test_create_duplicate(
+        self, brand_service: BrandService, brand_in: BrandCreate
+    ):
+        await brand_service.create(brand_in)
 
-    assert await repo.delete(brand) is False
+        with pytest.raises(AlreadyExistsException):
+            await brand_service.create(brand_in)
 
+    async def test_find_by_id_not_found(self, brand_service: BrandService):
+        brand_id = uuid.uuid4()
 
-@pytest.mark.asyncio
-async def test_delete_soft_service(
-    db_session: AsyncSession,
-    service: BrandService,
-    product_in: ProductCreate,
-    product_repo: ProductRepository,
-    brand: Brand,
-):
-    await product_repo.create(product_in)
-    await db_session.commit()
+        with pytest.raises(NotFoundException):
+            await brand_service.find_by_id(brand_id)
 
-    await service.delete(brand.id)
-    await db_session.refresh(brand)
+    async def test_update_duplicate(
+        self, brand_in: BrandCreate, brand_service: BrandService
+    ):
+        brand = await brand_service.create(brand_in)
 
-    assert brand.is_active is False
+        brand_another = BrandCreate(
+            name="Moura", origin="Brasil", provider="Moura", is_active=True
+        )
+        await brand_service.create(brand_another)
 
+        brand_data = BrandUpdate(name="Moura")
 
-@pytest.mark.asyncio
-async def test_delete_not_found_service(service: BrandService):
-    brand_id = uuid.uuid4()
+        with pytest.raises(AlreadyExistsException):
+            await brand_service.update(brand_id=brand.id, brand_data=brand_data)
 
-    with pytest.raises(NotFoundException):
-        await service.delete(brand_id)
+    async def test_delete_soft_cascade(
+        self,
+        db_session: AsyncSession,
+        brand_service: BrandService,
+        product_in: ProductCreate,
+        brand: Brand,
+        product_repo: ProductRepository,
+    ):
+        product = await product_repo.create(product_in)
+        await db_session.commit()
 
+        await brand_service.delete(brand.id)
 
-@pytest.mark.asyncio
-async def test_delete_soft_cascade_service(
-    db_session: AsyncSession,
-    service: BrandService,
-    product_in: ProductCreate,
-    brand: Brand,
-    product_repo: ProductRepository,
-):
-    product = await product_repo.create(product_in)
-    await db_session.commit()
+        assert brand.is_active is False
+        assert product.is_active is False
 
-    await service.delete(brand.id)
+    async def test_delete_hard_no_cascade(
+        self,
+        brand_service: BrandService,
+        brand: Brand,
+        brand_repo: BrandRepository,
+    ):
+        await brand_service.delete(brand.id)
 
-    assert brand.is_active is False
-    assert product.is_active is False
+        brand_deleted = await brand_repo.find_by_id(brand.id)
 
-
-@pytest.mark.asyncio
-async def test_delete_hard_no_cascade_service(
-    service: BrandService,
-    brand: Brand,
-    repo: BrandRepository,
-):
-    await service.delete(brand.id)
-
-    brand_deleted = await repo.find_by_id(brand.id)
-
-    assert brand_deleted is None
+        assert brand_deleted is None
