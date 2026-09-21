@@ -32,7 +32,5 @@ class RestockRepository:
             .group_by(restock_date, Product.sku, Brand.name)
             .order_by(restock_date, Product.sku, Brand.name)
         )
-
-        rows = await self.session.execute(stmt)
-
-        return rows.all()
+        result = await self.session.execute(stmt)
+        return result.all()

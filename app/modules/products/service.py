@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Product
-from .schemas import ProductCreate, ProductQuery, ProductUpdate
+from .schemas import ProductCreate, ProductQuery, ProductUpdate, ProductStockRow
 from .repository import ProductRepository
 from app.core.exceptions import (
     NotFoundException,
@@ -97,3 +97,6 @@ class ProductService:
 
         await self.repo.update(product=product, product_data=product_data)
         await self.session.commit()
+
+    async def export_stock(self) -> list:
+        return await self.repo.export_stock()

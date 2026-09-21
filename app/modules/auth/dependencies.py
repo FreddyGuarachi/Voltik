@@ -41,3 +41,6 @@ async def get_current_admin(user: CurrentUserDep) -> User:
         raise ForbiddenError()
 
     return user
+
+
+CurrentAdminDep = Annotated[User, Depends(get_current_admin)]

@@ -32,7 +32,5 @@ class SaleRepository:
             .group_by(sale_date, Product.sku, Brand.name)
             .order_by(sale_date, Product.sku, Brand.name)
         )
-
-        rows = await self.session.execute(stmt)
-
-        return rows.all()
+        result = await self.session.execute(stmt)
+        return result.all()

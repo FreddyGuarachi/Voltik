@@ -49,5 +49,3 @@ class BrandResponseList(BaseModel):
 
 class BrandSummary(BaseModel):
     name: str
-
-    model_config = ConfigDict(from_attributes=True)

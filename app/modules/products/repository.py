@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists, update
+from sqlalchemy import select, exists, update, Row
 from sqlalchemy.orm import joinedload
 
 from .models import Product
@@ -8,6 +8,7 @@ from .schemas import ProductCreate, ProductQuery, ProductUpdate
 from app.core.pagination import count_items, apply_order, paginate
 from ..sales.models import Sale
 from ..restock.models import Restock
+from ..brands.models import Brand
 
 
 class ProductRepository:
@@ -93,3 +94,12 @@ class ProductRepository:
         )
 
         await self.session.execute(stmt)
+
+    async def export_stock(self) -> list[Row]:
+        stmt = (
+            select(Product.stock, Product.sku, Brand.name)
+            .join(Product.brand)
+            .where(Product.is_active == True)
+        )
+        result = await self.session.execute(stmt)
+        return result.all()

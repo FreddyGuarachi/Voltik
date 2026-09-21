@@ -54,3 +54,11 @@ class ProductResponseList(BaseModel):
     total: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductStockRow(BaseModel):
+    stock: int
+    sku: str
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
