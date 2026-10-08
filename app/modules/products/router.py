@@ -1,5 +1,6 @@
 import uuid
-from fastapi import APIRouter, status, Depends
+from typing import Literal
+from fastapi import APIRouter, status, Response
 
 from .dependencies import ProductServiceDep, ProductQueryDep
 from .schemas import (
@@ -23,19 +24,30 @@ async def create(
 
 @router.get("/", response_model=ProductResponseList)
 async def find_all(
-    query: ProductQueryDep, service: ProductServiceDep, current_user: CurrentAdminDep
+    query: ProductQueryDep, service: ProductServiceDep, current_user: CurrentUserDep
 ):
     return await service.find_all(query)
 
 
 @router.get("/export", response_model=list[ProductStockRow])
-async def export_stock(service: ProductServiceDep, current_user: CurrentUserDep):
+async def export_stock(
+    service: ProductServiceDep,
+    current_user: CurrentUserDep,
+    format: Literal["json", "csv"] = "json",
+):
+    if format == "csv":
+        content = await service.export_stock_csv()
+        return Response(
+            content=content.encode("utf-8-sig"),
+            media_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="stock.csv"'},
+        )
     return await service.export_stock()
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
 async def find_by_id(
-    product_id: uuid.UUID, service: ProductServiceDep, current_user: CurrentAdminDep
+    product_id: uuid.UUID, service: ProductServiceDep, current_user: CurrentUserDep
 ):
     return await service.find_by_id(product_id)
 

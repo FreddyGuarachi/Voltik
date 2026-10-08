@@ -207,6 +207,14 @@ async def user(user_service: UserService, user_in: UserCreate) -> User:
     return await user_service.create(user_in)
 
 
+@pytest_asyncio.fixture
+async def admin(user_service: UserService) -> User:
+    admin_in = UserCreate(
+        user_name="admin", password="Admin1234", role=UserRole.ADMIN
+    )
+    return await user_service.create(admin_in)
+
+
 # --- Auth fixtures ---
 
 

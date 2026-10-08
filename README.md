@@ -1,80 +1,105 @@
 # Voltik
 
-API de gestión de stock, ventas y reposición para reemplazar el control manual (lápiz y papel) de inventario de baterías.
+A small app to keep track of battery stock at work: products, brands, sales and restocks.
+The idea is to stop doing it with pen and paper.
 
-## Stack
+- **Backend:** FastAPI + SQLAlchemy (async) + PostgreSQL, with Alembic for migrations.
+- **Frontend:** plain HTML/CSS/JS in `frontend/`, no frameworks.
 
-- **FastAPI** + **SQLAlchemy 2.0 (async)** + **PostgreSQL**
-- **Alembic** para migraciones
-- **Pydantic v2** para schemas/validación
-- **JWT** (PyJWT) + **pwdlib/argon2** para autenticación
-- **Pytest** (async) para testing, con SQLite en memoria
+## Getting started
 
-## Arquitectura
+You need Python 3.12+ and PostgreSQL running.
 
-Cada módulo de negocio (`app/modules/<nombre>`) sigue la misma estructura en capas:
-
-```
-router.py        # Endpoints HTTP, sin lógica de negocio
-service.py        # Reglas de negocio, orquesta repository(s)
-repository.py      # Acceso a datos (SQLAlchemy)
-schemas.py        # Pydantic: entrada/salida
-models.py         # Modelos ORM
-dependencies.py     # Inyección de dependencias (Depends)
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
 ```
 
-Módulos: `auth`, `users`, `brands`, `products`, `sales`, `restock`.
+Fill in `.env` with your database info. For `SECRET_KEY`, generate a random one:
 
-Errores de negocio se manejan con excepciones propias (`app/core/exceptions.py`) capturadas por un handler central (`app/core/handlers.py`) que las traduce a respuestas HTTP consistentes.
+```bash
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
 
-## Requisitos
+Create the database in Postgres (same name as in `.env`), then run the migrations:
 
-- Python 3.12+
-- PostgreSQL corriendo localmente (o accesible por red)
+```bash
+alembic upgrade head
+```
 
-## Setup
+## Creating the first admin
 
-1. Crear entorno virtual e instalar dependencias:
+Only an admin can create users, so the first one has to be added by hand.
+From the project root (change the name and password):
 
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+```bash
+python -c "
+import asyncio
+from app.db.session import SessionLocal
+from app.modules.users.models import User, UserRole
+from app.core.security import get_password_hash
 
-2. Copiar el archivo de variables de entorno y completarlo:
+async def main():
+    async with SessionLocal() as session:
+        session.add(User(user_name='admin', password_hash=get_password_hash('admin1234'), role=UserRole.ADMIN))
+        await session.commit()
 
-   ```bash
-   cp .env.example .env
-   ```
+asyncio.run(main())
+"
+```
 
-   Generar un `SECRET_KEY` random:
+## Running it
 
-   ```bash
-   python3 -c "import secrets; print(secrets.token_hex(32))"
-   ```
+Start the API:
 
-3. Crear la base de datos en Postgres (el nombre debe coincidir con `DATABASE_URL`/`DATABASE_URL_SYNC` en `.env`).
+```bash
+uvicorn app.main:app --reload
+```
 
-4. Aplicar migraciones:
+It runs on `http://127.0.0.1:8000`, and the docs are at `/docs`.
 
-   ```bash
-   alembic upgrade head
-   ```
+For the frontend, open `frontend/index.html` with VS Code's Live Server. It runs on
+`http://127.0.0.1:5500`.
 
-5. Levantar la API:
+If you open the frontend from a different address, add it to `CORS_ORIGINS` in `.env`,
+otherwise the browser blocks the requests:
 
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+```
+CORS_ORIGINS=["http://127.0.0.1:5500"]
+```
 
-   Docs interactivas en `http://localhost:8000/docs`.
+## Who can do what
 
-## Roles y permisos
+There are two roles: `admin` and `seller`.
 
-- `brands`, `products`, `users`: solo `admin`.
-- `sales`, `restock`: cualquier usuario autenticado.
-- Login: `POST /auth/login` (OAuth2 password flow) devuelve un JWT.
+- **Everyone logged in:** see products, register sales and restocks, export the stock.
+- **Admin only:** create, edit and delete products and brands, and manage users.
+
+Deleting a product or brand that already has movements doesn't really delete it.
+It just gets marked as inactive, so the history stays intact.
+
+## Stock export
+
+`GET /product/export?format=csv` downloads a CSV with every active product and its stock,
+plus two empty columns ("Conteo real" and "Diferencia") to fill in when you count the
+real stock. The "Descargar stock" button in the frontend does the same thing.
+
+## Project layout
+
+Each module in `app/modules/` (`auth`, `users`, `brands`, `products`, `sales`, `restock`)
+has the same files:
+
+- `router.py`: the endpoints
+- `service.py`: the business rules
+- `repository.py`: the database queries
+- `schemas.py`: Pydantic models for input/output
+- `models.py`: SQLAlchemy models
+- `dependencies.py`: wires everything together with `Depends`
+
+Custom errors live in `app/core/exceptions.py`. They are turned into HTTP responses in
+`app/core/handlers.py`.
 
 ## Tests
 
@@ -82,13 +107,13 @@ Errores de negocio se manejan con excepciones propias (`app/core/exceptions.py`)
 pytest app/test/ -q
 ```
 
-Usan una base SQLite en memoria (no tocan la base de Postgres real). Los fixtures compartidos están en `app/test/conftest.py`.
+They use an in-memory SQLite database, so your real data is never touched.
 
-## Migraciones
+## Migrations
 
-Crear una nueva migración tras cambiar un modelo:
+After changing a model:
 
 ```bash
-alembic revision --autogenerate -m "descripción del cambio"
+alembic revision --autogenerate -m "what changed"
 alembic upgrade head
 ```

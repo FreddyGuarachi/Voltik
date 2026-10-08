@@ -113,7 +113,7 @@ class TestBrandService:
 
         brand_data = BrandUpdate(name="Moura")
 
-        with pytest.raises(AlreadyExistsException):
+        with pytest.raises(AlreadyExistsException, match="Moura"):
             await brand_service.update(brand_id=brand.id, brand_data=brand_data)
 
     async def test_delete_soft_cascade(

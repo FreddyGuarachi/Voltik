@@ -50,7 +50,7 @@ class BrandService:
             existing_name = await self.repo.find_by_name(brand_data.name)
 
             if existing_name and existing_name.id != brand_id:
-                raise AlreadyExistsException("Brand", brand.name)
+                raise AlreadyExistsException("Brand", brand_data.name)
 
         await self.repo.update(brand=brand, brand_data=brand_data)
         await self.session.commit()

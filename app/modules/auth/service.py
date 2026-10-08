@@ -1,13 +1,13 @@
-from app.core.exceptions import InvalidCredentialsError
+from app.core.exceptions import InvalidCredentialsError, UserNotActiveError
 from app.core.security import verify_password, create_access_token
 from ..users.service import UserService
 
 
 class AuthService:
-    def __init__(self, user_service: UserService) -> dict:
+    def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    async def login(self, user_name: str, password: str):
+    async def login(self, user_name: str, password: str) -> dict:
         user = await self.user_service.find_by_user_name(user_name)
 
         is_password_valid = verify_password(
@@ -17,8 +17,11 @@ class AuthService:
         if not is_password_valid:
             raise InvalidCredentialsError()
 
+        if not user.is_active:
+            raise UserNotActiveError()
+
         data = {"sub": str(user.id), "role": user.role}
 
         token = create_access_token(data)
 
-        return {"access_token": token}
+        return {"access_token": token, "role": user.role}

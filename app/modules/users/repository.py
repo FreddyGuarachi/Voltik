@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from .models import User
-from .schemas import UserCreate, UserQuery, UserUpdate
+from .schemas import UserQuery, UserUpdate
 from app.core.pagination import count_items, apply_order, paginate
 
 
@@ -60,7 +60,9 @@ class UserRepository:
         return await self.session.scalar(stmt)
 
     async def update(self, user: User, user_data: UserUpdate) -> User:
-        for key, value in user_data.model_dump(exclude_unset=True).items():
+        data = user_data.model_dump(exclude_unset=True, exclude={"password"})
+
+        for key, value in data.items():
             setattr(user, key, value)
 
         return user

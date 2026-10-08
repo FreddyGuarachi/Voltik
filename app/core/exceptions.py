@@ -71,3 +71,11 @@ class ForbiddenError(AppException):
     def __init__(self):
         message = "Insufficient permissions"
         super().__init__(message)
+
+
+class SelfLockoutError(AppException):
+    status_code = 409
+
+    def __init__(self):
+        message = "You can't deactivate, demote or delete your own user"
+        super().__init__(message)

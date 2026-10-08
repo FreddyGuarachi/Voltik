@@ -1,13 +1,14 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .models import User
+from .models import User, UserRole
 from .schemas import UserCreate, UserUpdate, UserQuery, UserResponseList
 from .repository import UserRepository
 from app.core.exceptions import (
     AlreadyExistsException,
     NotFoundException,
     InvalidCredentialsError,
+    SelfLockoutError,
 )
 from app.core.security import get_password_hash
 
@@ -60,8 +61,20 @@ class UserService:
 
         return user
 
-    async def update(self, user_id: uuid.UUID, user_data: UserUpdate) -> User:
+    async def update(
+        self, user_id: uuid.UUID, user_data: UserUpdate, current_user_id: uuid.UUID
+    ) -> User:
         user = await self.find_by_id(user_id)
+
+        if user.id == current_user_id:
+            is_deactivating = user_data.is_active is False
+            is_demoting = user_data.role == UserRole.SELLER
+
+            if is_deactivating or is_demoting:
+                raise SelfLockoutError()
+
+        if user_data.password is not None:
+            user.password_hash = get_password_hash(user_data.password)
 
         await self.repo.update(user=user, user_data=user_data)
         await self.session.commit()
@@ -69,8 +82,11 @@ class UserService:
 
         return user
 
-    async def delete(self, user_id: uuid.UUID) -> None:
+    async def delete(self, user_id: uuid.UUID, current_user_id: uuid.UUID) -> None:
         user = await self.find_by_id(user_id)
+
+        if user.id == current_user_id:
+            raise SelfLockoutError()
 
         await self.repo.delete(user)
         await self.session.commit()

@@ -27,8 +27,8 @@ class RestockRepository:
                 Brand.name.label("brand_name"),
                 func.sum(Restock.quantity).label("total_quantity"),
             )
-            .join(Product, Product.id == Restock.product_id)
-            .join(Brand, Brand.id == Product.brand_id)
+            .join(Restock.product)
+            .join(Product.brand)
             .group_by(restock_date, Product.sku, Brand.name)
             .order_by(restock_date, Product.sku, Brand.name)
         )

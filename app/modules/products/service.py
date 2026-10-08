@@ -1,4 +1,7 @@
+import csv
+import io
 import uuid
+from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Product
@@ -87,7 +90,6 @@ class ProductService:
         product_data = ProductUpdate(stock=stock)
 
         await self.repo.update(product=product, product_data=product_data)
-        await self.session.commit()
 
     async def add_stock(self, product_id: uuid.UUID, quantity: int) -> None:
         product = await self.find_by_id(product_id)
@@ -96,7 +98,20 @@ class ProductService:
         product_data = ProductUpdate(stock=stock)
 
         await self.repo.update(product=product, product_data=product_data)
-        await self.session.commit()
 
     async def export_stock(self) -> list:
         return await self.repo.export_stock()
+
+    async def export_stock_csv(self) -> str:
+        rows = await self.export_stock()
+
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, delimiter=";")
+        writer.writerow(["Fecha", date.today().strftime("%d/%m/%Y")])
+        writer.writerow(
+            ["Marca", "Modelo", "Stock sistema", "Conteo real", "Diferencia"]
+        )
+        for row in rows:
+            writer.writerow([row.name, row.sku, row.stock, "", ""])
+
+        return buffer.getvalue()

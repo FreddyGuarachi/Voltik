@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, Depends
 
 from .schemas import UserResponse, UserCreate, UserResponseList, UserUpdate
 from .dependencies import UserServiceDep, UserQueryDep
-from ..auth.dependencies import get_current_admin
+from ..auth.dependencies import get_current_admin, CurrentAdminDep
 
 router = APIRouter(
     prefix="/user", tags=["User"], dependencies=[Depends(get_current_admin)]
@@ -26,10 +26,19 @@ async def find_by_id(user_id: uuid.UUID, service: UserServiceDep):
 
 
 @router.put("/{user_id}", response_model=UserResponse)
-async def update(user_id: uuid.UUID, user_data: UserUpdate, service: UserServiceDep):
-    return await service.update(user_id=user_id, user_data=user_data)
+async def update(
+    user_id: uuid.UUID,
+    user_data: UserUpdate,
+    service: UserServiceDep,
+    current_user: CurrentAdminDep,
+):
+    return await service.update(
+        user_id=user_id, user_data=user_data, current_user_id=current_user.id
+    )
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(user_id: uuid.UUID, service: UserServiceDep):
-    return await service.delete(user_id)
+async def delete(
+    user_id: uuid.UUID, service: UserServiceDep, current_user: CurrentAdminDep
+):
+    return await service.delete(user_id=user_id, current_user_id=current_user.id)

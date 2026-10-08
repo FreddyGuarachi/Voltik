@@ -44,3 +44,24 @@ class TestSaleService:
 
         with pytest.raises(InsufficientStockError):
             await sale_service.create(sale_in)
+
+    async def test_create_failure_keeps_stock(
+        self,
+        db_session: AsyncSession,
+        sale_service: SaleService,
+        product: Product,
+        sale_in: SaleCreate,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        async def failing_create(sale_in: SaleCreate):
+            raise RuntimeError("DB error")
+
+        monkeypatch.setattr(sale_service.repo, "create", failing_create)
+
+        with pytest.raises(RuntimeError):
+            await sale_service.create(sale_in)
+
+        await db_session.rollback()
+        await db_session.refresh(product)
+
+        assert product.stock == 10

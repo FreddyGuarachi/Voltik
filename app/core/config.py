@@ -7,6 +7,7 @@ class Setting(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+    CORS_ORIGINS: list[str] = ["http://127.0.0.1:5500"]
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,23 +76,19 @@ class TestProductRepository:
 class TestProductService:
     async def test_reduce_stock(
         self,
-        db_session: AsyncSession,
         product_service: ProductService,
         product: Product,
     ):
         await product_service.reduce_stock(product.id, quantity=4)
-        await db_session.refresh(product)
 
         assert product.stock == 6
 
     async def test_reduce_stock_exact_amount(
         self,
-        db_session: AsyncSession,
         product_service: ProductService,
         product: Product,
     ):
         await product_service.reduce_stock(product.id, quantity=product.stock)
-        await db_session.refresh(product)
 
         assert product.stock == 0
 
@@ -103,12 +100,10 @@ class TestProductService:
 
     async def test_add_stock(
         self,
-        db_session: AsyncSession,
         product_service: ProductService,
         product: Product,
     ):
         await product_service.add_stock(product.id, quantity=5)
-        await db_session.refresh(product)
 
         assert product.stock == 15
 
@@ -155,3 +150,13 @@ class TestProductService:
 
         with pytest.raises(NotFoundException):
             await product_service.update(product.id, product_data)
+
+    async def test_export_stock_csv(
+        self, product_service: ProductService, product: Product
+    ):
+        result = await product_service.export_stock_csv()
+
+        lines = result.splitlines()
+        assert lines[0] == f"Fecha;{date.today().strftime('%d/%m/%Y')}"
+        assert lines[1] == "Marca;Modelo;Stock sistema;Conteo real;Diferencia"
+        assert lines[2] == f"{product.brand.name};{product.sku};{product.stock};;"

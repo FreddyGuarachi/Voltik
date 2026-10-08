@@ -1,0 +1,263 @@
+/* ---------- General ---------- */
+
+body {
+  font-family: "Inter", Arial, sans-serif; /* Si Inter no carga, usa Arial */
+  margin: 0;
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+/* ---------- Barra superior ---------- */
+
+header {
+  display: flex;
+  align-items: center; /* Centra verticalmente título y menú */
+  justify-content: space-between; /* Título a la izquierda, menú a la derecha */
+  flex-wrap: wrap; /* En celular el menú baja de línea */
+  gap: 12px;
+  padding: 14px 32px;
+  background-color: #0f172a; /* Azul casi negro */
+  border-bottom: 3px solid #facc15; /* Línea amarilla, color "eléctrico" */
+}
+
+h1 {
+  margin: 0;
+  color: #facc15;
+  font-size: 1.5rem;
+  letter-spacing: 1px; /* Un poco de aire entre letras */
+}
+
+nav button {
+  margin-left: 4px;
+  background-color: transparent;
+  color: #cbd5e1;
+}
+
+nav button:hover {
+  background-color: #1e293b;
+  color: white;
+}
+
+/* El botón Salir, un poco distinto para que no se confunda */
+#logout-button {
+  border: 1px solid #475569;
+}
+
+/* ---------- Contenido ---------- */
+
+main {
+  max-width: 1000px;
+  margin: 0 auto; /* Centra el contenido en la pantalla */
+  padding: 32px 16px;
+}
+
+/* Cada sección se ve como una "tarjeta" blanca */
+section {
+  background-color: white;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Sombra suave */
+}
+
+h2 {
+  margin-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0; /* Línea debajo del título */
+  font-size: 1.4rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: #475569;
+}
+
+/* La tarjeta del login, más angosta y centrada */
+#login-section {
+  max-width: 380px;
+  margin: 60px auto;
+}
+
+/* En el login, el form no lleva su propia caja: ya está la tarjeta */
+#login-section form {
+  max-width: none;
+  margin-bottom: 0;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+}
+
+/* Sin margen a la derecha: el botón ocupa todo el ancho, igual que los campos */
+#login-section button {
+  margin-right: 0;
+}
+
+/* ---------- Formularios ---------- */
+
+form {
+  display: flex;
+  flex-direction: column; /* Un campo debajo del otro */
+  gap: 6px;
+  max-width: 400px;
+  margin-bottom: 32px;
+  padding: 20px;
+  background-color: #f8fafc; /* Fondo gris muy suave para separarlo de la tabla */
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+label {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+input,
+select {
+  padding: 10px;
+  font-family: inherit; /* Los inputs no heredan la fuente solos */
+  font-size: 1rem;
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+/* Cuando el campo está seleccionado (escribiendo en él) */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px #bfdbfe; /* Aro azul claro alrededor */
+}
+
+/* El checkbox no necesita el estilo de los campos de texto */
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Contenedor de los botones Guardar / Cancelar */
+form div {
+  margin-top: 12px;
+}
+
+/* ---------- Botones ---------- */
+
+button {
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background-color: #e2e8f0; /* Gris claro: botones secundarios */
+  color: #1e293b;
+  cursor: pointer; /* Manito al pasar el mouse */
+  transition: background-color 0.2s; /* El cambio de color al pasar el mouse es suave */
+}
+
+button:hover {
+  background-color: #cbd5e1;
+}
+
+/* Botón principal de cada formulario (Guardar, Ingresar...) */
+button[type="submit"] {
+  margin-top: 12px;
+  margin-right: 6px;
+  background-color: #2563eb; /* Azul */
+  color: white;
+}
+
+/* Dentro del div de Guardar/Cancelar el margen de arriba ya lo pone el div */
+form div button[type="submit"] {
+  margin-top: 0;
+}
+
+button[type="submit"]:hover {
+  background-color: #1d4ed8;
+}
+
+/* ---------- Mensajes ---------- */
+
+#status-message {
+  margin-top: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* :empty = cuando el párrafo no tiene texto, no se muestra */
+#status-message:empty {
+  display: none;
+}
+
+.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border-left: 4px solid #22c55e; /* Barrita de color a la izquierda */
+}
+
+.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+/* ---------- Tablas ---------- */
+
+/* Si la tabla no entra en pantalla (celular), se desplaza solo la tabla. */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse; /* Une los bordes de celdas vecinas */
+}
+
+th,
+td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase; /* Encabezados en mayúscula */
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+/* La última fila no necesita línea abajo (ya está el borde de la tabla) */
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Resalta la fila al pasar el mouse */
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Botones dentro de la tabla, más chicos */
+td button {
+  padding: 5px 12px;
+  margin-right: 4px;
+  font-size: 0.8rem;
+}
+
+/* El último botón de cada fila es "Eliminar": lo pintamos de rojo */
+td button:last-child {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+td button:last-child:hover {
+  background-color: #fecaca;
+}

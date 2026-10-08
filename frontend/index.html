@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voltik</title>
+    <!-- Tipografía Inter desde Google Fonts -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>⚡ Voltik</h1>
+
+      <!-- Menú: oculto hasta iniciar sesión.
+           Los botones con class="admin-only" solo los ve el administrador. -->
+      <nav id="main-nav" hidden>
+        <button type="button" id="nav-products" class="admin-only">
+          Productos
+        </button>
+        <button type="button" id="nav-brands" class="admin-only">Marcas</button>
+        <button type="button" id="nav-sales">Ventas</button>
+        <button type="button" id="nav-restock">Reposiciones</button>
+        <button type="button" id="nav-users" class="admin-only">
+          Usuarios
+        </button>
+        <button type="button" id="export-button">Descargar stock</button>
+        <button type="button" id="logout-button">Salir</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Mensajes de éxito o error -->
+      <p id="status-message"></p>
+
+      <!-- ========== Login ========== -->
+      <section id="login-section">
+        <h2>Iniciar sesión</h2>
+        <form id="login-form">
+          <label for="login-username">Usuario</label>
+          <input type="text" id="login-username" required />
+
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" required />
+
+          <button type="submit">Ingresar</button>
+        </form>
+      </section>
+
+      <!-- ========== Productos ========== -->
+      <section id="products-section" hidden>
+        <h2>Productos</h2>
+        <form id="product-form">
+          <label for="product-sku">SKU</label>
+          <input type="text" id="product-sku" required />
+
+          <label for="product-brand">Marca</label>
+          <select id="product-brand" required></select>
+
+          <label for="product-stock">Stock</label>
+          <input type="number" id="product-stock" min="0" value="0" required />
+
+          <!-- step="any" permite números con decimales -->
+          <label for="product-ah">Capacidad (Ah)</label>
+          <input type="number" id="product-ah" step="any" required />
+
+          <label for="product-cca">Arranque (CCA)</label>
+          <input type="number" id="product-cca" step="any" required />
+
+          <label for="product-voltage">Voltaje (V)</label>
+          <input
+            type="number"
+            id="product-voltage"
+            step="any"
+            value="12"
+            required
+          />
+
+          <label>
+            <input type="checkbox" id="product-active" checked />
+            Activo
+          </label>
+
+          <div>
+            <button type="submit">Guardar</button>
+            <button type="button" id="product-cancel">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Marca</th>
+                <th>Stock</th>
+                <th>Ah</th>
+                <th>CCA</th>
+                <th>V</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="products-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Marcas ========== -->
+      <section id="brands-section" hidden>
+        <h2>Marcas</h2>
+        <form id="brand-form">
+          <label for="brand-name">Nombre</label>
+          <input type="text" id="brand-name" required />
+
+          <label for="brand-origin">Origen</label>
+          <input type="text" id="brand-origin" required />
+
+          <label for="brand-provider">Proveedor</label>
+          <input type="text" id="brand-provider" required />
+
+          <label>
+            <input type="checkbox" id="brand-active" checked />
+            Activa
+          </label>
+
+          <div>
+            <button type="submit">Guardar</button>
+            <button type="button" id="brand-cancel">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Origen</th>
+                <th>Proveedor</th>
+                <th>Activa</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="brands-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Ventas ========== -->
+      <section id="sales-section" hidden>
+        <h2>Ventas</h2>
+        <form id="sale-form">
+          <label for="sale-product">Producto</label>
+          <select id="sale-product" required></select>
+
+          <label for="sale-quantity">Cantidad</label>
+          <input type="number" id="sale-quantity" min="1" value="1" required />
+
+          <button type="submit">Registrar venta</button>
+        </form>
+
+        <h3>Resumen diario</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>SKU</th>
+                <th>Marca</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody id="sale-summary"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Reposiciones ========== -->
+      <section id="restock-section" hidden>
+        <h2>Reposiciones</h2>
+        <form id="restock-form">
+          <label for="restock-product">Producto</label>
+          <select id="restock-product" required></select>
+
+          <label for="restock-quantity">Cantidad</label>
+          <input
+            type="number"
+            id="restock-quantity"
+            min="1"
+            value="1"
+            required
+          />
+
+          <button type="submit">Registrar reposición</button>
+        </form>
+
+        <h3>Resumen diario</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>SKU</th>
+                <th>Marca</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody id="restock-summary"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Usuarios ========== -->
+      <section id="users-section" hidden>
+        <h2>Usuarios</h2>
+        <form id="user-form">
+          <label for="user-name">Usuario</label>
+          <input type="text" id="user-name" required />
+
+          <label for="user-password">Contraseña</label>
+          <input type="password" id="user-password" required />
+
+          <label for="user-role">Rol</label>
+          <select id="user-role">
+            <option value="seller">Vendedor</option>
+            <option value="admin">Administrador</option>
+          </select>
+
+          <label>
+            <input type="checkbox" id="user-active" checked />
+            Activo
+          </label>
+
+          <div>
+            <button type="submit">Guardar</button>
+            <button type="button" id="user-cancel">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- type="module" permite usar import/export entre los archivos JS -->
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

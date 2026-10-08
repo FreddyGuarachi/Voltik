@@ -27,8 +27,8 @@ class SaleRepository:
                 Brand.name.label("brand_name"),
                 func.sum(Sale.quantity).label("total_quantity"),
             )
-            .join(Product, Product.id == Sale.product_id)
-            .join(Brand, Brand.id == Product.brand_id)
+            .join(Sale.product)
+            .join(Product.brand)
             .group_by(sale_date, Product.sku, Brand.name)
             .order_by(sale_date, Product.sku, Brand.name)
         )

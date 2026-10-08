@@ -100,6 +100,7 @@ class ProductRepository:
             select(Product.stock, Product.sku, Brand.name)
             .join(Product.brand)
             .where(Product.is_active == True)
+            .order_by(Brand.name, Product.sku)
         )
         result = await self.session.execute(stmt)
         return result.all()

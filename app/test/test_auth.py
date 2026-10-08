@@ -1,7 +1,8 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
-from app.core.exceptions import InvalidCredentialsError
+from app.core.exceptions import InvalidCredentialsError, UserNotActiveError
 from app.modules.auth.service import AuthService
 from app.modules.users.models import User
 from app.modules.users.schemas import UserCreate
@@ -17,6 +18,7 @@ class TestAuthService:
         )
 
         assert "access_token" in result
+        assert result["role"] == user.role
 
         payload = decode_access_token(result["access_token"])
         assert payload["sub"] == str(user.id)
@@ -29,3 +31,27 @@ class TestAuthService:
     async def test_login_user_not_found(self, auth_service: AuthService):
         with pytest.raises(InvalidCredentialsError):
             await auth_service.login(user_name="ghost", password="whatever")
+
+    async def test_login_inactive_user(
+        self,
+        db_session: AsyncSession,
+        auth_service: AuthService,
+        user_in: UserCreate,
+        user: User,
+    ):
+        user.is_active = False
+        await db_session.commit()
+
+        with pytest.raises(UserNotActiveError):
+            await auth_service.login(
+                user_name=user.user_name, password=user_in.password
+            )
+
+    async def test_login_inactive_user_wrong_password(
+        self, db_session: AsyncSession, auth_service: AuthService, user: User
+    ):
+        user.is_active = False
+        await db_session.commit()
+
+        with pytest.raises(InvalidCredentialsError):
+            await auth_service.login(user_name=user.user_name, password="wrong_pass")

@@ -3,14 +3,16 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.users.models import User
+from app.modules.users.models import User, UserRole
 from app.modules.users.schemas import UserCreate, UserQuery, UserUpdate
 from app.modules.users.repository import UserRepository
 from app.modules.users.service import UserService
+from app.core.security import verify_password
 from app.core.exceptions import (
     AlreadyExistsException,
     NotFoundException,
     InvalidCredentialsError,
+    SelfLockoutError,
 )
 
 
@@ -85,9 +87,23 @@ class TestUserService:
     async def test_update_user_name(self, user_service: UserService, user: User):
         user_data = UserUpdate(user_name="cambiado")
 
-        result = await user_service.update(user.id, user_data)
+        result = await user_service.update(
+            user.id, user_data, current_user_id=uuid.uuid4()
+        )
 
         assert result.user_name == "cambiado"
+
+    async def test_update_password(
+        self, user_service: UserService, user_in: UserCreate, user: User
+    ):
+        user_data = UserUpdate(password="Nueva1234")
+
+        result = await user_service.update(
+            user.id, user_data, current_user_id=uuid.uuid4()
+        )
+
+        assert verify_password("Nueva1234", result.password_hash)
+        assert not verify_password(user_in.password, result.password_hash)
 
     async def test_delete(
         self,
@@ -95,7 +111,36 @@ class TestUserService:
         user_repo: UserRepository,
         user: User,
     ):
-        await user_service.delete(user.id)
+        await user_service.delete(user.id, current_user_id=uuid.uuid4())
 
         deleted_user = await user_repo.find_by_id(user.id)
         assert deleted_user is None
+
+    async def test_update_self_deactivate(self, user_service: UserService, admin: User):
+        user_data = UserUpdate(is_active=False)
+
+        with pytest.raises(SelfLockoutError):
+            await user_service.update(admin.id, user_data, current_user_id=admin.id)
+
+    async def test_update_self_demote(self, user_service: UserService, admin: User):
+        user_data = UserUpdate(role=UserRole.SELLER)
+
+        with pytest.raises(SelfLockoutError):
+            await user_service.update(admin.id, user_data, current_user_id=admin.id)
+
+    async def test_update_self_keeping_admin(
+        self, user_service: UserService, admin: User
+    ):
+        user_data = UserUpdate(
+            user_name="admin_nuevo", is_active=True, role=UserRole.ADMIN
+        )
+
+        result = await user_service.update(
+            admin.id, user_data, current_user_id=admin.id
+        )
+
+        assert result.user_name == "admin_nuevo"
+
+    async def test_delete_self(self, user_service: UserService, admin: User):
+        with pytest.raises(SelfLockoutError):
+            await user_service.delete(admin.id, current_user_id=admin.id)
